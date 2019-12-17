@@ -41,7 +41,8 @@ module.exports = {
           sidebarDepth: 1,    //  设置侧边导航自动提取markdown文件标题的层级，默认1为h2层级
           children: [
             ['js/throttle-and-debounce.md', '函数节流与防抖'],
-            ['js/type-transform.md', 'js类型转换']
+            ['js/type-transform.md', 'js类型转换'],
+            ['js/axios-cancel.md', 'axios取消重复请求']
           ]
         },
         {
