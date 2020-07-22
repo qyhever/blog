@@ -1,17 +1,20 @@
 module.exports = {
-  base: '/blog/',
+  base: '/',
   title: '正在缓冲99%', // 显示在左上角的网页名称以及首页在浏览器标签显示的title名称
-  description: 'plutchar的前端记录', // meta 中的描述文字，用于SEO
+  description: 'noll的前端记录', // meta 中的描述文字，用于SEO
   // 注入到当前页面的 HTML <head> 中的标签
   head: [
     //浏览器的标签栏的网页图标，第一个'/'会遍历public文件夹的文件
     ['link', { rel: 'icon', href: '/favicon.png' }],
   ],
+  plugins: [
+    '@vuepress/back-to-top'
+  ],
 
   //下面涉及到的md文件和其他文件的路径下一步再详细解释
   themeConfig: {
     logo: '/favicon.png',  //网页顶端导航栏左上角的图标
-
+    lastUpdated: '上次更新',
     //顶部导航栏
     nav: [
       //格式一：直接跳转，'/'为不添加路由，跳转至首页
@@ -24,6 +27,7 @@ module.exports = {
         items: [
           { text: 'js', link: '/pages/js/type-transform.md' },
           { text: 'vue', link: '/pages/vue/element-ui-upload.md' },
+          { text: 'react', link: '/pages/react/create-react-app-common-customer-config.md' },
         ]
       },
       { text: '功能演示', link: '/pages/js/throttle-and-debounce.md' },
@@ -50,6 +54,13 @@ module.exports = {
           collapsable: false,
           children: [
             ['vue/element-ui-upload.md', '封装element-ui的upload组件']
+          ]
+        },
+        {
+          title: 'react',
+          collapsable: false,
+          children: [
+            ['react/create-react-app-common-customer-config.md', 'create-react-app 一些常用的自定义配置']
           ]
         }
       ],
