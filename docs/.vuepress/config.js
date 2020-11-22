@@ -46,7 +46,9 @@ module.exports = {
           children: [
             ['js/throttle-and-debounce.md', '函数节流与防抖'],
             ['js/type-transform.md', 'js类型转换'],
-            ['js/axios-cancel.md', 'axios取消重复请求']
+            ['js/axios-cancel.md', 'axios取消重复请求'],
+            ['js/common-method.md', '一些常用的方法实现'],
+            ['js/common-use-lodash-methods.md', '开发中常用的lodash方法']
           ]
         },
         {

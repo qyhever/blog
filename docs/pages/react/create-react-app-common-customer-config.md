@@ -88,7 +88,7 @@ module.exports = function(app) {
       target: 'http://localhost:6000', // 请求接口地址
       changeOrigin: true,
       pathRewrite: {
-        '^/api': '/'
+        '^/api': ''
       }
     })
   )
@@ -114,8 +114,16 @@ module.exports = {
 ```
 
 #### 关闭自动开启浏览器配置
-在`scripts/start.js`文件，注释掉`openBrowser(urls.localUrlForBrowser)`即可
-或者设置环境变量`BROWSER`为`none`
+在`scripts/start.js`文件，注释掉`openBrowser(urls.localUrlForBrowser)`即可，
+或者使用环境变量`BROWSER`
+
+```json
+{
+  "script": {
+    "start": "cross-env BROWSER=none node scripts/start.js"
+  }
+}
+```
 
 #### 修改 webpack `output.publicPath`
 
@@ -127,17 +135,37 @@ module.exports = {
 }
 ```
 
-或者在命令行中使用`PUBLIC_URL`字段
+或者使用环境变量`PUBLIC_URL`
 
 ```json
 {
   "script": {
-		"build": "cross-env PUBLIC_URL=/e-admin/ node scripts/build.js"
-	}
+    "build": "cross-env PUBLIC_URL=/e-admin/ node scripts/build.js"
+  }
 }
 ```
-
-> 因为各平台设置环境变量的方式不同，这里使用`cross-env`来抹平差异
+修改 `publicPath` 之后，如果路由使用 `history` 模式，还需要做其他配置
+- `react-router-dom` 的 `Router` 组件 `basename` 属性
+  ```jsx
+  <BrowserRouter
+    basename="/e-admin"
+  >
+    <App />
+  </BrowserRouter>
+  ```
+  如果使用 `history`
+  ```js
+  const history = createBrowserHistory({
+    basename: '/e-admin'
+  })
+  ```
+- 静态服务器（使用nginx）做重定向配置（$try_files）
+  ```shell
+  # 因为前端使用了BrowserHistory，所以将路由 fallback 到 index.html
+  location /e-admin {
+    try_files $uri $uri/ /e-admin/index.html;
+  }
+  ```
 
 
 #### 生产环境关闭 sourcemap
@@ -155,7 +183,6 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 }
 ```
 
-
 #### eslint 配置
 
 可以直接在`package.json`中的`eslintConfig`字段配置。
@@ -165,10 +192,12 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 ```json
 {
   "script": {
-    "build": "cross-env EXTEND_ESLINT=true node scripts/build.js"
-	}
+    "start": "cross-env EXTEND_ESLINT=true node scripts/start.js"
+  }
 }
 ```
+
+> 因为各平台设置环境变量的方式不同，这里使用`cross-env`来抹平差异
 
 #### 装饰器 Decorators 配置
 开发中会有很多高阶组件以及 redux 的 `connect` 来包裹组件，使用 `Decorators` 写法会直观许多
@@ -217,6 +246,7 @@ create-react-app 默认支持`development`，`test`，`production`，这里的 `
 - 开发环境 dev
 - 测试环境 alpha
 - 生产环境 prod
+
 1、然后在根目录新建三个文件 `.env`，`.env.alpha`，`.env.prod`，文件内容如下：
   ```
   // .env
@@ -259,7 +289,74 @@ create-react-app 默认支持`development`，`test`，`production`，这里的 `
 > 注意：
 - 需要注意的是在 env.js 文件中将 NODE_ENV 替换为了 MODE_ENV，导致本来的 NODE_ENV 缺失，在 .env.[xxx] 文件中要补上
 - .env.[xxx] 的环境变量 以 REACT_APP_xxx 开头
-- 这里加载 .env 文件使用 env-cmd 也是可以的，[详情](https://www.html.cn/create-react-app/docs/deployment/#%E4%B8%BA%E4%BB%BB%E6%84%8F%E6%9E%84%E5%BB%BA%E7%8E%AF%E5%A2%83%E5%AE%9A%E5%88%B6%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F)
+
+
+#### 编译进度条配置
+- 安装依赖
+  ```shell
+  yarn add webpackbar
+  ```
+- 修改`webpack.config.js`文件
+  ```javascript
+  const WebpackBar = require('webpackbar')
+  plugins: [
+    // ...
+    new webpack.ProgressPlugin(),
+    new WebpackBar()
+  ]
+  ```
+`webpack.ProgressPlugin()` 是`webpack`内置插件，[webpack.ProgressPlugin](https://webpack.js.org/plugins/progress-plugin/)，`WebpackBar`用来显示编译时长
+
+
+#### 打包开启 gzip 压缩
+- 安装依赖
+  ```shell
+  yarn add compression-webpack-plugin
+  ```
+- 修改`webpack.config.js`文件
+  ```javascript
+  const CompressionPlugin = require('compression-webpack-plugin')
+  const isGzip = process.env.GENERATE_GZIP_FILE === 'true'
+  plugins: [
+    // ...
+    isEnvProduction && isGzip && new CompressionPlugin({
+      filename: '[path].gz[query]', // 新版本 asset 属性已更换为 filename
+      algorithm: 'gzip',
+      test: /\.js$|\.css$/,
+      threshold: 10240,
+      minRatio: 0.8
+    })
+  ]
+  ```
+- 通过设置环境变量`GENERATE_GZIP_FILE=true`来启用`gzip`压缩
+
+> 请确保静态服务器开启了 gzip 配置项，nginx 配置 gzip_static on; 选项即可
+
+下面是未开启`gzip`和开启`gzip`的效果：
+- 未开启 gzip
+
+  ![未开启gzip](https://blog.qiniu.qyhever.com/file.png)
+
+- 开启 gzip
+
+  ![未开启gzip](https://blog.qiniu.qyhever.com/file-gz.png)
+
+#### 生成 report.html 可视化打包分析
+- 安装依赖
+  ```shell
+  yarn add webpack-bundle-analyzer
+  ```
+- 修改`webpack.config.js`文件
+  ```javascript
+  const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+  const isBundleAnalyzer = process.env.GENERATE_BUNDLE_ANALYZER_REPORT === 'true'
+  plugins: [
+    // ...
+    isEnvProduction && isBundleAnalyzer && new BundleAnalyzerPlugin()
+  ]
+  ```
+- 通过设置环境变量`GENERATE_BUNDLE_ANALYZER_REPORT=true`来生成`report`
+
 
 #### 引入 antd
 
@@ -340,8 +437,9 @@ function App() {
       {
         importLoaders: 2,
         sourceMap: isEnvProduction && shouldUseSourceMap,
-        modules: true,
-        getLocalIdent: getCSSModuleLocalIdent
+        modules: {
+            getLocalIdent: getCSSModuleLocalIdent
+        }
       },
       'less-loader'
     ),
@@ -422,6 +520,81 @@ function App() {
   ```
 
 - 去掉`import 'antd/dist/antd.less'`的引入，现在引入组件就会附带引入对应组件的样式了
+
+#### 全局less变量
+项目中如果使用 `less` 或者 `sass`，那么可能会有些全局变量，需要在样式文件中使用，如果不做任何配置那么需要在用到变量的样式文件中引入变量文件`@import './var.less'`。
+
+我们需要使用 `sass-resources-loader` 将变量和混入方法注入到全局，这样就可以在每个样式文件中直接使用变量了。
+
+具体配置：
+1、修改`getStyleLoaders`方法
+  ```javascript
+  const getStyleLoaders = (cssOptions, preProcessor, restLoaders) => {
+    // 改 const 为 let，后面根据函数第三个参数重新赋值
+    let loaders = [
+      // ...
+    ]
+    // ...
+    if (Array.isArray(restLoaders) && restLoaders.length) {
+      loaders = loaders.concat(restLoaders)
+    }
+    return loaders
+  }
+  ```
+2、修改 `less-loader` 配置
+  ```javascript
+  {
+    test: lessRegex,
+    exclude: lessModuleRegex,
+    use: getStyleLoaders(
+      {
+        importLoaders: 2,
+        sourceMap: isEnvProduction && shouldUseSourceMap,
+      },
+      'less-loader',
+      // 添加第三个参数
+      [
+        {
+          loader: 'sass-resources-loader',
+          options: {
+            resources: [
+              path.resolve(__dirname, '../src/assets/styles/var.less')
+            ]
+          }
+        }
+      ]
+    ),
+    sideEffects: true,
+  },
+  {
+    test: lessModuleRegex,
+    use: getStyleLoaders(
+      {
+        importLoaders: 2,
+        sourceMap: isEnvProduction && shouldUseSourceMap,
+        modules: {
+          getLocalIdent: getCSSModuleLocalIdent,
+        }
+      },
+      'less-loader',
+      // 添加第三个参数
+      [
+        {
+          loader: 'sass-resources-loader',
+          options: {
+            resources: [
+              path.resolve(__dirname, '../src/assets/styles/var.less')
+            ]
+          }
+        }
+      ]
+    ),
+  }
+  ```
+  这里使用`less`配置，变量文件路径`src/assets/styles/var.less`，配置完成后不用引入`var.less`，就可以在每个样式文件中使用变量了。
+
+
+[项目地址](https://github.com/qyhever/cra-common-customer-config)
 
 
 > 参考链接：
