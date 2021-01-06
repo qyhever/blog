@@ -17,6 +17,6 @@ actionLink: /pages/js/throttle-and-debounce.md
 # ↑↑↑ 把 footer 注释掉 ↑↑↑
 ---
 <div class="footer" style="position: fixed;bottom: 0;left: 50px;right: 50px;">
-  <div style="padding-bottom: 5px;">Copyright © 2019 - 2020  noll 版权所有</div>
-  <span onclick="window.open('http://www.beian.miit.gov.cn')" style="cursor: pointer">鄂ICP备18017930号</span>
+  <div style="padding-bottom: 5px;">Copyright © 2019 - 2021  noll 版权所有</div>
+  <a href="https://beian.miit.gov.cn" style="color: #4e6e8e">鄂ICP备18017930号-1</a>
 </div>

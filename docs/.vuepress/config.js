@@ -6,6 +6,7 @@ module.exports = {
   head: [
     //浏览器的标签栏的网页图标，第一个'/'会遍历public文件夹的文件
     ['link', { rel: 'icon', href: '/favicon.png' }],
+    ['meta', { name: 'keywords', content: 'qyhever、noll' }],
   ],
   plugins: [
     '@vuepress/back-to-top'
@@ -28,9 +29,9 @@ module.exports = {
           { text: 'js', link: '/pages/js/type-transform.md' },
           { text: 'vue', link: '/pages/vue/element-ui-upload.md' },
           { text: 'react', link: '/pages/react/create-react-app-common-customer-config.md' },
+          { text: 'git', link: '/pages/git/emoji.md' },
         ]
       },
-      { text: '功能演示', link: '/pages/js/throttle-and-debounce.md' },
 
       //格式三：跳转至外部网页，需http/https前缀
       { text: 'Github', link: 'https://github.com/qyhever' },
@@ -55,6 +56,7 @@ module.exports = {
           title: 'vue',
           collapsable: false,
           children: [
+            ['vue/update-array-item.md', '关于vue更新数组项，你知道多少'],
             ['vue/element-ui-upload.md', '封装element-ui的upload组件']
           ]
         },
@@ -63,6 +65,13 @@ module.exports = {
           collapsable: false,
           children: [
             ['react/create-react-app-common-customer-config.md', 'create-react-app 一些常用的自定义配置']
+          ]
+        },
+        {
+          title: 'git',
+          collapsable: false,
+          children: [
+            ['git/emoji.md', '在 Git 提交记录中添加表情']
           ]
         }
       ],
