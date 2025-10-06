@@ -6,4 +6,7 @@ docs/.vuepress/.cache
 .github
 *.log
 *.md
+!README.md
 .DS_Store
+**/.DS_Store
+.vscode

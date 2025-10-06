@@ -1,2 +1,5 @@
 node_modules
 docs/.vuepress/dist
+# OS
+.DS_Store
+**/.DS_Store
