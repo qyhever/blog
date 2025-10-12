@@ -36,6 +36,7 @@ server { \
         root /usr/share/nginx/html; \
         index index.html; \
         try_files $uri $uri/ /index.html; \
+        access_log off; \
     } \
     \
     error_page 500 502 503 504 /50x.html; \
